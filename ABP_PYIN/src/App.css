@@ -1,1 +1,68 @@
 @import "tailwindcss";
+.dark-mode {
+    background-color: #1f2937;
+    color: #e5e7eb;
+}
+
+.dark-mode header {
+    background-color: #111827;
+    color: #e5e7eb;
+}
+
+.dark-mode .search-input {
+    background-color: #374151;
+    color: #e5e7eb;
+    border-color: #4b5563;
+}
+
+.dark-mode .search-input::placeholder {
+    color: #9ca3af;
+}
+
+.dark-mode .stats-panel {
+    background-color: #1f2937;
+    color: #e5e7eb;
+    border-color: #374151;
+}
+
+.dark-mode select {
+    background-color: #374151;
+    color: #e5e7eb;
+}
+
+.dark-mode button.mode-toggle {
+    background-color: #374151;
+    color: #e5e7eb;
+}
+
+.dark-mode .pagination-info {
+    color: #e5e7eb;
+}
+
+/* Modo claro */
+.search-input {
+    background-color: white;
+    color: #1f2937;
+}
+
+button.mode-toggle {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+.stats-panel {
+    background-color: white;
+    color: #1f2937;
+}
+
+.pagination-info {
+    color: #4b5563;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
