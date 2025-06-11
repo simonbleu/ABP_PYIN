@@ -80,10 +80,14 @@ function StatsPanel(props) {
     plugins: {
       legend: {
         display: selectedChart === "pie",
+        labels: {
+          color: props.darkMode ? '#e5e7eb' : '#eb350e'
+        }
       },
       title: {
         display: true,
-        text: `${selectedStat.charAt(0).toUpperCase() + selectedStat.slice(1)} - ${selectedChart.charAt(0).toUpperCase() + selectedChart.slice(1)}`
+        text: `${selectedStat.charAt(0).toUpperCase() + selectedStat.slice(1)} - ${selectedChart.charAt(0).toUpperCase() + selectedChart.slice(1)}`,
+        color: props.darkMode ? '#e5e7eb' : '#eb350e'
       }
     },
     scales: selectedChart !== "pie" ? {
@@ -93,7 +97,19 @@ function StatsPanel(props) {
         suggestedMin: 0,
         ticks: {
           precision: 2,
-          stepSize: 0.1
+          stepSize: 0.1,
+          color: props.darkMode ? '#e5e7eb' : '#eb350e' /*numeros y stat*/ 
+        },
+        grid: {
+          color: props.darkMode ? '#e5e7eb' : '#1f2937' /*linas y contornos*/ 
+        }
+      },
+      x: {
+        ticks: {
+          color: props.darkMode ? '#e5e7eb' : '#eb350e' /*texto eje x abajo*/ 
+        },
+        grid: {
+          color: props.darkMode ? '#e5e7eb' : '#374151' /*linea divisora*/ 
         }
       }
     } : {}
@@ -118,27 +134,31 @@ function StatsPanel(props) {
   const showChart = selectedStat && selectedChart;
 
   return (
-    <div className="border border-gray-300 rounded p-4 max-w-md">
-      <h2 className="text-xl font-bold mb-2">Estadísticas</h2>
-      <p>Productos totales: {props.total}</p>
-      <p>Precio máximo: {props.max !== null ? `$${props.max.toFixed(2)}` : "N/A"}</p>
-      <p>Producto más caro: {props.maxName || "N/A"}</p>
-      <p>Precio mínimo: {props.min !== null ? `$${props.min.toFixed(2)}` : "N/A"}</p>
-      <p>Producto más barato: {props.minName || "N/A"}</p>
-      <p>Cant. títulos &gt; 20 caracteres: {props.longTitles}</p>
-      <p>Precio total: ${props.totalPrice.toFixed(2)}</p>
-      <p>Promedio descuento: {Math.round(props.avgDiscount)}%</p>
-      <p>Precio promedio: ${props.avgPrice}</p>
-      <p>Producto con más vocales: {props.mostVowelsName}</p>
+    <div className="border border-gray-200 dark:border-gray-700 rounded p-4 max-w-md bg-white dark:bg-gray-800 transition-colors duration-300">
+      <h2 className="text-xl font-bold mb-2 text-gray-800 dark:text-white">Estadísticas</h2>
+      <div className="space-y-1 text-gray-600 dark:text-gray-300">
+        <p>Productos totales: {props.total}</p>
+        <p>Precio máximo: {props.max !== null ? `$${props.max.toFixed(2)}` : "N/A"}</p>
+        <p>Producto más caro: {props.maxName || "N/A"}</p>
+        <p>Precio mínimo: {props.min !== null ? `$${props.min.toFixed(2)}` : "N/A"}</p>
+        <p>Producto más barato: {props.minName || "N/A"}</p>
+        <p>Cant. títulos &gt; 20 caracteres: {props.longTitles}</p>
+        <p>Precio total: ${props.totalPrice.toFixed(2)}</p>
+        <p>Promedio descuento: {Math.round(props.avgDiscount)}%</p>
+        <p>Precio promedio: ${props.avgPrice}</p>
+        <p>Producto con más vocales: {props.mostVowelsName}</p>
+      </div>
       
       {/* Selectores */}
       <div className="mt-4 space-y-2">
         <div>
-          <label className="block text-sm font-medium mb-1">Estadística:</label>
+          <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+            Estadística:
+          </label>
           <select 
             value={selectedStat} 
             onChange={(e) => setSelectedStat(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded text-black"
+            className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-gray-800 dark:text-white transition-colors duration-300"
           >
             <option value="">Seleccionar estadística</option>
             <option value="precios">Precios (Min/Max)</option>
@@ -148,11 +168,13 @@ function StatsPanel(props) {
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-1">Tipo de gráfico:</label>
+          <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+            Tipo de gráfico:
+          </label>
           <select 
             value={selectedChart} 
             onChange={(e) => setSelectedChart(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded text-black"
+            className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-gray-800 dark:text-white transition-colors duration-300"
           >
             <option value="">Seleccionar tipo de gráfico</option>
             <option value="bar">Barras</option>
