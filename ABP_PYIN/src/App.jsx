@@ -17,20 +17,69 @@ function App() {
   const [show, setShow] = useState(false);
   const [showGif, setShowGif] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalAPIProducts, setTotalAPIProducts] = useState(0); // Agregar este estado
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [sortBy, setSortBy] = useState('none');
+  const [format, setFormat] = useState('');
+
+
   //referencias
   const containerRef = useRef(null);
+  const limit = 20
   // se llama a la api para obtener los datos de productos
-  useEffect(()=>{
-    axios.get("https://dummyjson.com/products?limit=100").then((res)=>{
-    setProducts(res.data.products);})
-  },[]);
+useEffect(() => {
+    axios.get(`https://dummyjson.com/products?limit=${limit}&skip=${(page-1)*limit}`)
+      .then((res) => {
+        if (res.data && res.data.products) {
+          setProducts(res.data.products);
+          setTotalAPIProducts(res.data.total);
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        setProducts([]);
+        setTotalAPIProducts(0);
+      });
+  }, [page, limit, selectedCategory]); 
+
+  // useEffect separado para categorías
+useEffect(() => {
+    axios.get('https://dummyjson.com/products/categories')
+      .then((res) => {
+        console.log('Datos crudos:', res.data);
+        if (Array.isArray(res.data)) {
+          setCategories(res.data);
+        }
+      })
+      .catch(error => {
+        console.error("Error al cargar categorías:", error);
+        setCategories([]);
+      });
+  }, []); 
 
 // 1. Productos filtrados
-const filteredProducts = products.filter((p) =>
-  p.title.toLowerCase().includes(search.toLowerCase()));
+  const filteredProducts = products.filter((p) =>
+    p.title.toLowerCase().includes(search.toLowerCase())
+    && (selectedCategory === 'all' || p.category === selectedCategory)
+  ).sort((a, b) => {
+    switch(sortBy) {
+      case 'price-asc':
+        return a.price - b.price;
+      case 'price-desc':
+        return b.price - a.price;
+      case 'rating-asc':
+        return a.rating - b.rating;
+      case 'rating-desc':
+        return b.rating - a.rating;
+      default:
+        return 0;
+    }
+  });
 
-// 2. Total productos
-const totalProducts = filteredProducts.length;
+  // 2. Total productos
+  const totalProducts = filteredProducts.length;
 
 // 3. Precio máximo y producto más caro
 const maxPrice = totalProducts > 0 ? Math.max(...filteredProducts.map(p => p.price)) : null;
@@ -85,14 +134,71 @@ useEffect(() => {
   return () => clearTimeout(timeout);
 }, [filteredProducts]);
 
-const toggleDarkMode = ()=>{
+const toggleDarkMode = () => {
     setDarkMode(!darkMode);
     containerRef.current.classList.toggle("dark-mode"); 
 }; 
 
+
+const handleExport = () => {
+  if (!format) return;
+  
+  var blob, headers, url, content;
+
+  if (format === 'json') {
+    blob = new Blob([JSON.stringify(filteredProducts, null, 2)], {
+      type: "application/json",
+    });
+    url = URL.createObjectURL(blob);
+    triggerDownload(url, 'productos.json');
+  } 
+  else if (format === 'csv') {
+    headers = Object.keys(filteredProducts[0]).join(',');
+    var csvRows = filteredProducts.map(product => 
+      Object.values(product).join(',')
+    );
+    content = [headers, ...csvRows].join('\n');
+    
+    blob = new Blob([content], {
+      type: "text/csv;charset=utf-8",
+    });
+    url = URL.createObjectURL(blob);
+    triggerDownload(url, 'productos.csv');
+  }
+  else if (format === 'excel') {
+    headers = Object.keys(filteredProducts[0]).join('\t');
+    var excelRows = filteredProducts.map(product => 
+      Object.values(product).join('\t')
+    );
+    content = [headers, ...excelRows].join('\n');
+    
+    blob = new Blob([content], {
+      type: "application/vnd.ms-excel",
+    });
+    url = URL.createObjectURL(blob);
+    triggerDownload(url, 'productos.xls');
+  }
+};
+
+const triggerDownload = (url, filename) => {
+  //crear hipervinculo
+  var link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  //agregamos anchor tag al DOM
+  document.body.appendChild(link);
+  // simulamos click en el elelmento
+  link.click();
+  //eliminar elemento del DOM
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+
+
   return (
-    <div ref={containerRef}>
-<Header
+<div ref={containerRef} className="min-h-screen transition-colors duration-300">
+      <Header
         search={search}
         setSearch={setSearch}
         show={show}
@@ -100,38 +206,107 @@ const toggleDarkMode = ()=>{
         darkMode={darkMode}
         containerRef={containerRef}
         toggleDarkMode={toggleDarkMode}
+        categories={categories}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
         statsPanel={
-        <StatsPanel
-      total={totalProducts}
-      max={maxPrice}
-      maxName={maxName}
-      min={minPrice}
-      minName={minName}
-      longTitles={longTitles}
-      totalPrice={totalPrice}
-      avgDiscount={avgDiscount}
-      avgPrice={avgPrice.toFixed(2)}
-      countAboveAvg={countAboveAvg}
-      mostVowelsName={productMostVowels ? productMostVowels.title : "N/A"}
-    />
-  }
-/>
-      <Productlist products={filteredProducts} /> 
-      {/*renderizacion condicional*/}
-      {filteredProducts.length === 0 && <div className="text-center w-full 
-      py-4">No se encontraron productos {showGif && (
-      <img
-  src="https://media3.giphy.com/media/mlvseq9yvZhba/giphy.gif"
-  alt="Easter egg gif"
-  className="mx-auto mt-4"
-  style={{
-    opacity: showGif ? 1 : 0,
-    transition: "opacity 1s ease-in-out",
-  }}
-/>
-    )}</div>}
+          <StatsPanel
+          darkMode={darkMode}
+            total={totalProducts}
+            max={maxPrice}
+            maxName={maxName}
+            min={minPrice}
+            minName={minName}
+            longTitles={longTitles}
+            totalPrice={totalPrice}
+            avgDiscount={avgDiscount}
+            avgPrice={avgPrice.toFixed(2)}
+            countAboveAvg={countAboveAvg}
+            mostVowelsName={productMostVowels ? productMostVowels.title : "N/A"}
+          />
+        }
+      />
+      <div className="container mx-auto px-4 py-4 flex gap-4">
+ {/* Primera fila: categorías y ordenamiento */}
+  <div className="flex gap-4">
+    <select
+      value={selectedCategory}
+      onChange={(e) => setSelectedCategory(e.target.value)}
+      className="p-2 border rounded dark:bg-gray-700 dark:text-white"
+    >
+      <option value="all">Todas las categorías</option>
+      {Array.isArray(categories) && categories.length > 0 ? (
+        categories.map(category => (
+          <option key={category.slug} value={category.slug}>
+            {category.name}
+          </option>
+        ))
+      ) : (
+        <option value="" disabled>Cargando categorías...</option>
+      )}
+    </select>
+
+    <select
+      value={sortBy}
+      onChange={(e) => setSortBy(e.target.value)}
+      className="p-2 border rounded dark:bg-gray-700 dark:text-white"
+    >
+      <option value="none">Sin ordenar</option>
+      <option value="price-asc">Precio: Menor a Mayor</option>
+      <option value="price-desc">Precio: Mayor a Menor</option>
+      <option value="rating-asc">Rating: Menor a Mayor</option>
+      <option value="rating-desc">Rating: Mayor a Menor</option>
+    </select>
+  </div>
+
+  {/* Segunda fila: exportación */}
+  <div className="flex gap-4">
+    <select 
+      onChange={(e)=>setFormat(e.target.value)} 
+      value={format}
+      className="p-2 border rounded dark:bg-gray-700 dark:text-white"
+    > 
+      <option value="">Seleccionar formato</option>
+      <option value="json">JSON</option>
+      <option value="csv">CSV</option>
+      <option value="excel">Excel</option>
+    </select>
+    <button 
+      onClick={handleExport}
+      className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-50"
+    >
+      Exportar archivo
+    </button>
+  </div>
+      </div>
+      <p>pagina {page}</p>
+      <button disabled ={page === 1} onClick={()=>{setPage(page-1)}}>Anterior</button>
+      <button disabled ={page * limit >= totalAPIProducts} onClick={()=>{setPage(page+1)}}>Siguiente</button>
+<p>totalapi {totalAPIProducts}</p>
+{/* funciona porque total api, y mostrar x de x prod, muestr atodos los que trae la api */}
+<div className="container mx-auto px-4 py-8">
+        <Productlist products={filteredProducts} />
+        {filteredProducts.length === 0 && (
+          <div className="text-center w-full py-4">
+            No se encontraron productos
+            {showGif && (
+              <img
+                src="https://media3.giphy.com/media/mlvseq9yvZhba/giphy.gif"
+                alt="Easter egg gif"
+                className="mx-auto mt-4"
+                style={{
+                  opacity: showGif ? 1 : 0,
+                  transition: "opacity 1s ease-in-out",
+                }}
+              />
+            )}
+          </div>
+        )}
+      </div>
     </div>
-  )
+  );
 }
 
 export default App;
