@@ -8,7 +8,7 @@ function Header(props) {
             className="w-10 h-10 text-white p-2 bg-indigo-500 rounded-full" viewBox="0 0 24 24">
             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
           </svg>
-          <span className="ml-3 text-xl">Evidencia Proyecto Integrador</span>
+          <span className="ml-3 text-xl">ABP Proyecto Integrador</span>
         </a>
 
         <div className="md:ml-auto md:mr-auto w-full md:w-1/2 mb-4 md:mb-0">
@@ -41,13 +41,6 @@ function Header(props) {
               {props.statsPanel}
             </div>
           )}
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-4 flex justify-end items-center gap-4">
-        <div className="flex items-center gap-2 mr-auto">
-          <span className="text-gray-700">Filtrar por:</span>
-          {props.children}
         </div>
       </div>
     </header>
