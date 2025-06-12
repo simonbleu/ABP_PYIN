@@ -42,7 +42,7 @@ useEffect(() => {
         setProducts([]);
         setTotalAPIProducts(0);
       });
-  }, [page, limit, selectedCategory]); 
+  }, [page, limit, selectedCategory]); // Cerrar correctamente el useEffect
 
   // useEffect separado para categorías
 useEffect(() => {
@@ -57,7 +57,7 @@ useEffect(() => {
         console.error("Error al cargar categorías:", error);
         setCategories([]);
       });
-  }, []); 
+  }, []); // Solo un cierre del useEffect porque cuenta para todos los use effect no solo el primero
 
 // 1. Productos filtrados
   const filteredProducts = products.filter((p) =>
@@ -228,13 +228,16 @@ const triggerDownload = (url, filename) => {
           />
         }
       />
-      <div className="container mx-auto px-4 py-4 flex gap-4">
+    <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
  {/* Primera fila: categorías y ordenamiento */}
-  <div className="flex gap-4">
+    <div className="flex justify-start gap-4 items-center w-full">
+    <span className="text-gray-800 dark:text-white font-semibold min-w-[80px]">
+      Filtrar por:
+    </span>
     <select
       value={selectedCategory}
       onChange={(e) => setSelectedCategory(e.target.value)}
-      className="p-2 border rounded dark:bg-gray-700 dark:text-white"
+      className="mode-toggle px-4 py-2 font-semibold rounded focus:outline-none focus:ring-2 focus:ring-gray-400"
     >
       <option value="all">Todas las categorías</option>
       {Array.isArray(categories) && categories.length > 0 ? (
@@ -251,7 +254,7 @@ const triggerDownload = (url, filename) => {
     <select
       value={sortBy}
       onChange={(e) => setSortBy(e.target.value)}
-      className="p-2 border rounded dark:bg-gray-700 dark:text-white"
+      className="mode-toggle px-4 py-2 font-semibold rounded focus:outline-none focus:ring-2 focus:ring-gray-400"
     >
       <option value="none">Sin ordenar</option>
       <option value="price-asc">Precio: Menor a Mayor</option>
@@ -262,11 +265,14 @@ const triggerDownload = (url, filename) => {
   </div>
 
   {/* Segunda fila: exportación */}
-  <div className="flex gap-4">
+      <div className="flex justify-start gap-4 items-center w-full">
+          <span className="text-gray-800 dark:text-white font-semibold min-w-[80px]">
+      Exportar:
+    </span>
     <select 
       onChange={(e)=>setFormat(e.target.value)} 
       value={format}
-      className="p-2 border rounded dark:bg-gray-700 dark:text-white"
+      className="mode-toggle px-4 py-2 font-semibold rounded focus:outline-none focus:ring-2 focus:ring-gray-400"
     > 
       <option value="">Seleccionar formato</option>
       <option value="json">JSON</option>
@@ -281,11 +287,6 @@ const triggerDownload = (url, filename) => {
     </button>
   </div>
       </div>
-      <p>pagina {page}</p>
-      <button disabled ={page === 1} onClick={()=>{setPage(page-1)}}>Anterior</button>
-      <button disabled ={page * limit >= totalAPIProducts} onClick={()=>{setPage(page+1)}}>Siguiente</button>
-<p>totalapi {totalAPIProducts}</p>
-{/* funciona porque total api, y mostrar x de x prod, muestr atodos los que trae la api */}
 <div className="container mx-auto px-4 py-8">
         <Productlist products={filteredProducts} />
         {filteredProducts.length === 0 && (
@@ -305,7 +306,33 @@ const triggerDownload = (url, filename) => {
           </div>
         )}
       </div>
-    </div>
+      {/* Paginación */}
+<div className="container mx-auto px-4 py-4 flex flex-col items-end gap-2">
+  <div className="flex items-center gap-4">
+    <button 
+      disabled={page === 1} 
+      onClick={() => setPage(page-1)}
+      className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-50"
+    >
+      Anterior
+    </button>
+    <span className="text-gray-700 dark:text-gray-500 font-semibold">
+      Página {page}
+    </span>
+    <button 
+      disabled={page * limit >= totalAPIProducts} 
+      onClick={() => setPage(page+1)}
+      className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-50"
+    >
+      Siguiente
+    </button>
+  </div>
+  <span className="text-sm text-gray-600 dark:text-gray-400">
+    Mostrando {Math.min((page-1)*limit + 1, totalAPIProducts)} - {Math.min(page*limit, totalAPIProducts)} de {totalAPIProducts} productos
+  </span>
+  </div>
+  </div>
+    
   );
 }
 
